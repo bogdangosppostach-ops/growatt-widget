@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Growatt Monitor</title>
+    <title>Growatt Inverter Monitor</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
@@ -105,22 +105,22 @@
     <div class="card">
         <div class="header">
             <div>
-                <div class="title">Сонячна станція</div>
+                <div class="title">Інвертор та Генератор</div>
                 <div style="font-size: 12px; color: #94a3b8;" id="plant-id">Plant ID: 4137574</div>
             </div>
             <div id="status-badge" class="badge error">Завантаження...</div>
         </div>
 
-        <div class="metric-title">Поточна потужність</div>
+        <div class="metric-title">Потужність інвертора</div>
         <div class="metric-value" id="power">0 Вт</div>
 
         <div class="grid">
             <div class="sub-card">
-                <div class="metric-title" style="margin-bottom: 4px;">Генерація за день</div>
+                <div class="metric-title" style="margin-bottom: 4px;">Енергія за день</div>
                 <div class="sub-value" id="today-energy">0 кВт·год</div>
             </div>
             <div class="sub-card">
-                <div class="metric-title" style="margin-bottom: 4px;">Статус логера</div>
+                <div class="metric-title" style="margin-bottom: 4px;">Логер SN</div>
                 <div class="sub-value" style="font-size: 13px; color: #38bdf8;" id="logger-sn">QAS3G6F04S</div>
             </div>
         </div>
@@ -135,7 +135,6 @@
         tg.expand();
 
         function loadData() {
-            // Запит напряму до сирого файлу з додаванням унікального параметру часу, щоб заблокувати кеш
             const jsonUrl = 'https://raw.githubusercontent.com/bogdangosppostach-ops/growatt-widget/main/data.json?t=' + new Date().getTime();
 
             fetch(jsonUrl)
@@ -151,10 +150,8 @@
 
                         const pd = data.plant_data;
                         if (pd && typeof pd === 'object') {
-                            const power = pd.invetorPower || pd.power || pd.invPower || pd.pac || 0;
-                            const energy = pd.todayEnergy || pd.eToday || 0;
-                            document.getElementById('power').innerText = power + ' Вт';
-                            document.getElementById('today-energy').innerText = energy + ' кВт·год';
+                            document.getElementById('power').innerText = (pd.invetorPower || 0) + ' Вт';
+                            document.getElementById('today-energy').innerText = (pd.todayEnergy || 0) + ' кВт·год';
                         } else {
                             document.getElementById('power').innerText = '0 Вт';
                             document.getElementById('today-energy').innerText = '0 кВт·год';
@@ -165,14 +162,4 @@
                     }
                 })
                 .catch(err => {
-                    console.error('Помилка завантаження:', err);
-                    const badge = document.getElementById('status-badge');
-                    badge.className = 'badge error';
-                    badge.innerText = 'Збій мережі';
-                });
-        }
-
-        loadData();
-    </script>
-</body>
-</html>
+                    console.error('Помилка завантаження:',
