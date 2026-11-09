@@ -1,9 +1,9 @@
 import json
 from datetime import datetime
 import urllib.request
-import urllib.parse
 
 PLANT_ID = 4137574
+LOGGER_SN = "QAS3G6F04S"
 
 def main():
     plant_data = None
@@ -11,8 +11,8 @@ def main():
     error_message = None
 
     try:
-        # Використовуємо прямий публічний запит до веб-інтерфейсу сервера Growatt
-        url = f"https://server.growatt.com/panel/propagand/getPlantData?plantId={PLANT_ID}"
+        # Використовуємо публічний ендпоінт та передаємо правильний SN логера
+        url = f"https://server.growatt.com/panel/propagand/getPlantData?plantId={PLANT_ID}&deviceSn={LOGGER_SN}"
         req = urllib.request.Request(
             url, 
             headers={
@@ -36,6 +36,7 @@ def main():
     data_to_save = {
         "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "plant_id": PLANT_ID,
+        "logger_sn": LOGGER_SN,
         "status": status,
         "error": error_message,
         "plant_data": plant_data,
