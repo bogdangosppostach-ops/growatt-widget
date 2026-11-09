@@ -1,10 +1,8 @@
 import json
-import os
 from datetime import datetime
-from growattServer import GrowattApi
+import urllib.request
+import urllib.parse
 
-USERNAME = os.getenv("GROWATT_USER")
-PASSWORD = os.getenv("GROWATT_PASSWORD")
 PLANT_ID = 4137574
 
 def main():
@@ -12,23 +10,28 @@ def main():
     status = "error"
     error_message = None
 
-    if not USERNAME or not PASSWORD:
-        error_message = "Missing environment variables"
-    else:
-        try:
-            api = GrowattApi()
-            login_response = api.login(USERNAME, PASSWORD)
+    try:
+        # Використовуємо прямий публічний запит до веб-інтерфейсу сервера Growatt
+        url = f"https://server.growatt.com/panel/propagand/getPlantData?plantId={PLANT_ID}"
+        req = urllib.request.Request(
+            url, 
+            headers={
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Referer': 'https://server.growatt.com/'
+            }
+        )
+        
+        with urllib.request.urlopen(req, timeout=10) as response:
+            res_text = response.read().decode('utf-8')
+            res_data = json.loads(res_text)
             
-            if login_response and ("userId" in login_response or login_response.get("success") == True):
-                try:
-                    plant_data = api.plant_detail(PLANT_ID)
-                    status = "success"
-                except Exception as e:
-                    error_message = f"Plant detail error: {str(e)}"
+            if res_data:
+                plant_data = res_data
+                status = "success"
             else:
-                error_message = f"Login failed: {login_response}"
-        except Exception as e:
-            error_message = str(e)
+                error_message = "Empty data received"
+    except Exception as e:
+        error_message = str(e)
 
     data_to_save = {
         "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -40,6 +43,8 @@ def main():
 
     with open("data.json", "w", encoding="utf-8") as f:
         json.dump(data_to_save, f, ensure_ascii=False, indent=4)
+
+    print("Файл data.json оновлено зі статусом:", status)
 
 if __name__ == "__main__":
     main()
