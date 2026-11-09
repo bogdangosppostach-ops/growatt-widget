@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="uk" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Growatt Liquid Glass Mini App</title>
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"SF Pro Text"', 'Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Base Styling with Smooth Liquid Mesh Background */
+        body {
+            background-color: #090d16;
+            color: #f1f5f9;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Fluid Mesh Gradient Orbs (Liquid Glow Effect) */
+        .liquid-orb-1 {
+            position: absolute;
+            top: -10%;
+            left: -15%;
+            width: 320px;
+            height: 320px;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.35) 0%, rgba(16, 185, 129, 0) 70%);
+            filter: blur(60px);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: floatOrb 12s ease-in-out infinite alternate;
+        }
+
+        .liquid-orb-2 {
+            position: absolute;
+            top: 25%;
+            right: -20%;
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.35) 0%, rgba(59, 130, 246, 0) 70%);
+            filter: blur(70px);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: floatOrb 15s ease-in-out infinite alternate-reverse;
+        }
+
+        .liquid-orb-3 {
+            position: absolute;
+            bottom: 5%;
+            left: -10%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(236, 72, 153, 0.25) 0%, rgba(236, 72, 153, 0) 70%);
+            filter: blur(65px);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: floatOrb 10s ease-in-out infinite alternate;
+        }
+
+        @keyframes floatOrb {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(30px, 40px) scale(1.1); }
+            100% { transform: translate(-20px, -20px) scale(0.95); }
+        }
+
+        /* Liquid Glass UI Component Base Styles */
+        .liquid-glass {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 100%);
+            backdrop-filter: blur(24px) saturate(190%);
+            -webkit-backdrop-filter: blur(24px) saturate(190%);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 
+                        inset 0 1px 1px rgba(255, 255, 255, 0.25),
+                        inset 0 -1px 1px rgba(0, 0, 0, 0.3);
+            border-radius: 1.5rem;
+        }
+
+        .liquid-glass-header {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(15, 23, 42, 0.6) 100%);
+            backdrop-filter: blur(30px) saturate(200%);
+            -webkit-backdrop-filter: blur(30px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+        }
+
+        .liquid-glass-pill {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2);
+        }
+
+        /* SVG Energy Flow Animation Lines */
+        @keyframes flowPulse {
+            0% { stroke-dashoffset: 24; }
+            100% { stroke-dashoffset: 0; }
+        }
+
+        .energy-flow-line {
+            stroke-dasharray: 6 6;
+            animation: flowPulse 0.9s linear infinite;
+        }
+
+        .energy-flow-reverse {
+            animation-direction: reverse;
+        }
+
+        /* Liquid Gauge Ring */
+        .ring-circle {
+            transition: stroke-dashoffset 0.8s ease-in-out, stroke 0.5s ease;
+        }
+
+        /* Liquid Sliders */
+        input[type=range] {
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            height: 6px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: #ffffff;
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.8);
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="p-3 sm:p-5 flex flex-col items-center justify-start min-h-screen">
+
+    <!-- Fluid Background Glow Orbs -->
+    <div class="liquid-orb-1"></div>
+    <div class="liquid-orb-2"></div>
+    <div class="liquid-orb-3"></div>
+
+    <!-- Main Telegram App Wrapper -->
+    <div class="w-full max-w-md mx-auto flex flex-col gap-4 relative z-10 pb-8">
+
+        <!-- Header: Inverter Status & Telegram Controls -->
+        <div class="liquid-glass-header sticky top-2 z-30 p-3.5 rounded-2xl flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400/80 to-teal-600/80 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20 border border-white/30 backdrop-blur-md">
+                    <i class="fa-solid fa-bolt-lightning text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-sm tracking-wide text-white flex items-center gap-1.5">
+                        Growatt SPH 6000
+                    </h1>
+                    <div class="flex items-center gap-1.5 mt-0.5">
+                        <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]"></span>
+                        <span class="text-xs text-emerald-300 font-medium" id="status-text">Онлайн • Wi-Fi S/N: PFQ0G</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button onclick="triggerRefresh()" class="w-9 h-9 rounded-xl liquid-glass-pill hover:bg-white/15 flex items-center justify-center transition text-gray-200 active:scale-90">
+                    <i class="fa-solid fa-arrows-rotate text-xs" id="refresh-icon"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Hero Battery Card: Liquid Donut Ring Gauge -->
+        <div class="liquid-glass p-5 rounded-3xl relative overflow-hidden flex items-center justify-between">
+            <div class="flex flex-col justify-center z-10">
+                <span class="text-xs font-bold uppercase tracking-wider text-gray-300/80 flex items-center gap-1.5 mb-1">
+                    <i class="fa-solid fa-car-battery text-emerald-400"></i> Акумулятор (LiFePO4)
+                </span>
+                <div class="text-3xl font-black text-white tracking-tight flex items-baseline gap-1" id="bat-soc-text">
+                    85<span class="text-lg font-bold text-emerald-400">%</span>
+                </div>
+                <div class="text-xs font-semibold text-emerald-300 mt-1 flex items-center gap-1.5" id="bat-status-lbl">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                    Заряджається (+1.85 кВт)
+                </div>
+                <div class="text-[11px] text-gray-400 mt-2">
+                    Ємність: <span class="text-white font-medium">10.2 кВт·год</span>
+                </div>
+            </div>
+
+            <!-- SVG Ring Gauge -->
+            <div class="relative w-28 h-28 flex items-center justify-center">
+                <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="40" stroke="rgba(255,255,255,0.08)" stroke-width="8" fill="transparent" />
+                    <circle id="battery-ring" class="ring-circle" cx="50" cy="50" r="40" stroke="#10b981" stroke-width="8" stroke-dasharray="251.2" stroke-dashoffset="37.6" stroke-linecap="round" fill="transparent" />
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                    <i class="fa-solid fa-charging-station text-emerald-400 text-lg mb-0.5"></i>
+                    <span class="text-[10px] text-gray-300 font-semibold" id="bat-voltage">51.2 В</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2x2 Glass Cards Grid -->
+        <div class="grid grid-cols-2 gap-3">
+
+            <!-- Card 1: Solar Panels (PV) -->
+            <div class="liquid-glass p-4 rounded-2xl flex flex-col justify-between">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-gray-300/80">Сонце (PV)</span>
+                    <span class="w-7 h-7 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-solar-panel"></i>
+                    </span>
+                </div>
+                <div>
+                    <div class="text-2xl font-black text-white tracking-tight" id="pv-power-val">3.20 <span class="text-xs font-medium text-gray-300">кВт</span></div>
+                    <div class="text-[11px] font-medium text-amber-300 mt-0.5">Сонячна генерація</div>
+                </div>
+                <div class="mt-3 pt-2 border-t border-white/10 text-[10px] text-gray-400 flex justify-between">
+                    <span>Сьогодні:</span>
+                    <span class="text-white font-semibold">14.8 кВт·год</span>
+                </div>
+            </div>
+
+            <!-- Card 2: Grid Import/Export -->
+            <div class="liquid-glass p-4 rounded-2xl flex flex-col justify-between">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-gray-300/80">Мережа</span>
+                    <span class="w-7 h-7 rounded-xl bg-blue-500/20 text-blue-300 border border-blue-500/30 flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-tower-broadcast"></i>
+                    </span>
+                </div>
+                <div>
+                    <div class="text-2xl font-black text-white tracking-tight" id="grid-power-val">1.05 <span class="text-xs font-medium text-gray-300">кВт</span></div>
+                    <div class="text-[11px] font-medium text-blue-300 mt-0.5" id="grid-sub-text">Імпорт з мережі</div>
+                </div>
+                <div class="mt-3 pt-2 border-t border-white/10 text-[10px] text-gray-400 flex justify-between">
+                    <span>Напруга:</span>
+                    <span class="text-white font-semibold">228 В</span>
+                </div>
+            </div>
+
+            <!-- Card 3: House Load -->
+            <div class="liquid-glass p-4 rounded-2xl flex flex-col justify-between">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-gray-300/80">Споживання</span>
+                    <span class="w-7 h-7 rounded-xl bg-pink-500/20 text-pink-300 border border-pink-500/30 flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-house-chimney-user"></i>
+                    </span>
+                </div>
+                <div>
+                    <div class="text-2xl font-black text-white tracking-tight" id="load-power-val">2.40 <span class="text-xs font-medium text-gray-300">кВт</span></div>
+                    <div class="text-[11px] font-medium text-pink-300 mt-0.5">Навантаження будинку</div>
+                </div>
+                <div class="mt-3 pt-2 border-t border-white/10 text-[10px] text-gray-400 flex justify-between">
+                    <span>Частота:</span>
+                    <span class="text-white font-semibold">50.0 Гц</span>
+                </div>
+            </div>
+
+            <!-- Card 4: Inverter Temp & Status -->
+            <div class="liquid-glass p-4 rounded-2xl flex flex-col justify-between">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-gray-300/80">Інвертор</span>
+                    <span class="w-7 h-7 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-microchip"></i>
+                    </span>
+                </div>
+                <div>
+                    <div class="text-2xl font-black text-white tracking-tight" id="inv-temp-val">38.4 <span class="text-xs font-medium text-gray-300">°C</span></div>
+                    <div class="text-[11px] font-medium text-emerald-300 mt-0.5">Нормальний стан</div>
+                </div>
+                <div class="mt-3 pt-2 border-t border-white/10 text-[10px] text-gray-400 flex justify-between">
+                    <span>Режим:</span>
+                    <span class="text-emerald-300 font-semibold">Self-Consumption</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Animated Liquid Energy Flow Diagram -->
+        <div class="liquid-glass p-5 rounded-3xl relative border border-white/15 shadow-2xl">
+            <div class="flex justify-between items-center mb-1">
+                <span class="text-xs font-bold uppercase tracking-wider text-gray-200 flex items-center gap-1.5">
+                    <i class="fa-solid fa-route text-emerald-400"></i> Інтерактивний потік енергії
+                </span>
+                <span class="text-[10px] text-emerald-300 liquid-glass-pill px-2.5 py-1 rounded-full font-medium">Realtime</span>
+            </div>
+
+            <!-- Flow SVG Map -->
+            <div class="relative w-full h-44 flex items-center justify-center">
+                <svg class="w-full h-full absolute inset-0 pointer-events-none" viewBox="0 0 350 170">
+                    <!-- Glow Line Paths -->
+                    <path d="M 175 40 L 175 75" stroke="#f59e0b" stroke-width="2.5" fill="none" opacity="0.3" />
+                    <path id="svg-flow-pv" d="M 175 40 L 175 75" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" fill="none" class="energy-flow-line" />
+
+                    <path d="M 85 85 L 150 85" stroke="#3b82f6" stroke-width="2.5" fill="none" opacity="0.3" />
+                    <path id="svg-flow-grid" d="M 85 85 L 150 85" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" fill="none" class="energy-flow-line" />
+
+                    <path d="M 200 85 L 265 85" stroke="#ec4899" stroke-width="2.5" fill="none" opacity="0.3" />
+                    <path id="svg-flow-home" d="M 200 85 L 265 85" stroke="#ec4899" stroke-width="2.5" stroke-linecap="round" fill="none" class="energy-flow-line" />
+
+                    <path d="M 175 95 L 175 130" stroke="#10b981" stroke-width="2.5" fill="none" opacity="0.3" />
+                    <path id="svg-flow-bat" d="M 175 130 L 175 95" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" fill="none" class="energy-flow-line" />
+                </svg>
+
+                <!-- Top Node: Solar (PV) -->
+                <div class="absolute top-0 left-1/2 -translate-x-1/2 flex flex-col items-center">
+                    <div class="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-400/40 text-amber-300 flex items-center justify-center shadow-lg backdrop-blur-md">
+                        <i class="fa-solid fa-sun text-sm"></i>
+                    </div>
+                    <span class="text-[10px] font-bold text-amber-300 mt-0.5" id="flow-pv-txt">3.20 кВт</span>
+                </div>
+
+                <!-- Left Node: Grid -->
+                <div class="absolute left-2 top-1/2 -translate-y-1/2 flex flex-col items-center">
+                    <div class="w-9 h-9 rounded-xl bg-blue-500/20 border border-blue-400/40 text-blue-300 flex items-center justify-center shadow-lg backdrop-blur-md">
+                        <i class="fa-solid fa-tower-broadcast text-sm"></i>
+                    </div>
+                    <span class="text-[10px] font-bold text-blue-300 mt-0.5" id="flow-grid-txt">1.05 кВт</span>
+                </div>
+
+                <!-- Center Node: Inverter -->
+                <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400/30 to-blue-600/30 border border-white/30 text-emerald-300 flex items-center justify-center shadow-xl backdrop-blur-lg">
+                        <i class="fa-solid fa-bolt text-lg"></i>
+                    </div>
+                    <span class="text-[9px] text-gray-300 font-medium mt-0.5">Growatt</span>
+                </div>
+
+                <!-- Right Node: Home Load -->
+                <div class="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col items-center">
+                    <div class="w-9 h-9 rounded-xl bg-pink-500/20 border border-pink-400/40 text-pink-300 flex items-center justify-center shadow-lg backdrop-blur-md">
+                        <i class="fa-solid fa-house-chimney text-sm"></i>
+                    </div>
+                    <span class="text-[10px] font-bold text-pink-300 mt-0.5" id="flow-home-txt">2.40 кВт</span>
+                </div>
+
+                <!-- Bottom Node: Battery -->
+                <div class="absolute bottom-0 left-1/2 -translate-x-1/2 flex flex-col items-center">
+                    <span class="text-[10px] font-bold text-emerald-300 mb-0.5" id="flow-bat-txt">+1.85 кВт</span>
+                    <div class="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 flex items-center justify-center shadow-lg backdrop-blur-md">
+                        <i class="fa-solid fa-battery-three-quarters text-sm"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Simulation Controls (Interactive Sliders) -->
+            <div class="mt-1 pt-3 border-t border-white/10 grid grid-cols-2 gap-3 text-xs">
+                <div class="liquid-glass-pill p-2 rounded-xl">
+                    <div class="flex justify-between text-[10px] text-amber-300 font-semibold mb-1">
+                        <span>Генерація Сонця</span>
+                        <span id="slider-pv-lbl">3.2 кВт</span>
+                    </div>
+                    <input type="range" min="0" max="6" step="0.1" value="3.2" id="slider-pv" oninput="onSimulationChange()" class="w-full">
+                </div>
+                <div class="liquid-glass-pill p-2 rounded-xl">
+                    <div class="flex justify-between text-[10px] text-pink-300 font-semibold mb-1">
+                        <span>Споживання Будинку</span>
+                        <span id="slider-load-lbl">2.4 кВт</span>
+                    </div>
+                    <input type="range" min="0.2" max="5" step="0.1" value="2.4" id="slider-load" oninput="onSimulationChange()" class="w-full">
+                </div>
+            </div>
+        </div>
+
+        <!-- Telegram Action Footer Button -->
+        <button onclick="shareStatusToTelegram()" class="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-blue-500 text-white font-bold text-sm shadow-xl shadow-emerald-900/40 border border-white/20 active:scale-95 transition flex items-center justify-center gap-2">
+            <i class="fa-paper-plane fa-solid"></i> Поділитися статусом у чаті
+        </button>
+
+    </div>
+
+    <!-- Script Logic for Telemetry Simulation and Dynamic Render -->
+    <script>
+        // Init Telegram WebApp API if available
+        let tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.expand();
+            tg.ready();
+        }
+
+        // Live Telemetry State
+        let data = {
+            soc: 85,
+            pvPower: 3.20,
+            loadPower: 2.40,
+            batPower: 1.85,
+            gridPower: 1.05,
+            temp: 38.4
+        };
+
+        window.onload = function() {
+            renderDashboard();
+
+            // Periodic slight simulation fluctuation
+            setInterval(() => {
+                const pvNoise = (Math.random() - 0.5) * 0.08;
+                const loadNoise = (Math.random() - 0.5) * 0.06;
+
+                data.pvPower = Math.max(0, parseFloat((data.pvPower + pvNoise).toFixed(2)));
+                data.loadPower = Math.max(0.2, parseFloat((data.loadPower + loadNoise).toFixed(2)));
+
+                recalculateEnergyBalance();
+                renderDashboard();
+            }, 3500);
+        };
+
+        function recalculateEnergyBalance() {
+            const net = data.pvPower - data.loadPower;
+            if (net >= 0) {
+                // Surplus power charges battery up to 2.5 kW
+                data.batPower = Math.min(2.5, net);
+                data.gridPower = -(net - data.batPower); // negative = export
+            } else {
+                // Deficit: battery discharges
+                data.batPower = -Math.min(2.0, Math.abs(net));
+                data.gridPower = Math.abs(net) - Math.abs(data.batPower);
+            }
+
+            // SoC progression
+            data.soc = Math.min(100, Math.max(5, data.soc + (data.batPower * 0.02)));
+        }
+
+        function renderDashboard() {
+            // Update Hero Battery Gauge Ring
+            document.getElementById('bat-soc-text').innerHTML = `${Math.round(data.soc)}<span class="text-lg font-bold text-emerald-400">%</span>`;
+            
+            // SVG Circumference = 2 * PI * 40 ≈ 251.2
+            const maxDash = 251.2;
+            const offset = maxDash - (maxDash * (data.soc / 100));
+            document.getElementById('battery-ring').style.strokeDashoffset = offset;
+
+            const batStatusLbl = document.getElementById('bat-status-lbl');
+            if (data.batPower > 0.05) {
+                batStatusLbl.className = "text-xs font-semibold text-emerald-300 mt-1 flex items-center gap-1.5";
+                batStatusLbl.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Заряджається (+${data.batPower.toFixed(2)} кВт)`;
+            } else if (data.batPower < -0.05) {
+                batStatusLbl.className = "text-xs font-semibold text-orange-300 mt-1 flex items-center gap-1.5";
+                batStatusLbl.innerHTML = `<span class="w-2 h-2 rounded-full bg-orange-400 animate-ping"></span> Розряджається (${data.batPower.toFixed(2)} кВт)`;
+            } else {
+                batStatusLbl.className = "text-xs font-semibold text-gray-400 mt-1 flex items-center gap-1.5";
+                batStatusLbl.innerHTML = `<span class="w-2 h-2 rounded-full bg-gray-400"></span> Режим очікування`;
+            }
+
+            // Cards Data
+            document.getElementById('pv-power-val').innerHTML = `${data.pvPower.toFixed(2)} <span class="text-xs font-medium text-gray-300">кВт</span>`;
+            document.getElementById('load-power-val').innerHTML = `${data.loadPower.toFixed(2)} <span class="text-xs font-medium text-gray-300">кВт</span>`;
+            document.getElementById('grid-power-val').innerHTML = `${Math.abs(data.gridPower).toFixed(2)} <span class="text-xs font-medium text-gray-300">кВт</span>`;
+
+            const gridSub = document.getElementById('grid-sub-text');
+            if (data.gridPower < 0) {
+                gridSub.innerText = "Експорт в мережу";
+                gridSub.className = "text-[11px] font-medium text-amber-300 mt-0.5";
+            } else {
+                gridSub.innerText = "Імпорт з мережі";
+                gridSub.className = "text-[11px] font-medium text-blue-300 mt-0.5";
+            }
+
+            // Flow Diagram Text
+            document.getElementById('flow-pv-txt').innerText = `${data.pvPower.toFixed(2)} кВт`;
+            document.getElementById('flow-grid-txt').innerText = `${Math.abs(data.gridPower).toFixed(2)} кВт`;
+            document.getElementById('flow-home-txt').innerText = `${data.loadPower.toFixed(2)} кВт`;
+            document.getElementById('flow-bat-txt').innerText = `${data.batPower >= 0 ? '+' : ''}${data.batPower.toFixed(2)} кВт`;
+
+            // SVG Animation Direction Updates
+            const gridFlowLine = document.getElementById('svg-flow-grid');
+            if (data.gridPower < 0) {
+                gridFlowLine.classList.add('energy-flow-reverse');
+            } else {
+                gridFlowLine.classList.remove('energy-flow-reverse');
+            }
+
+            const batFlowLine = document.getElementById('svg-flow-bat');
+            if (data.batPower > 0) {
+                batFlowLine.classList.add('energy-flow-reverse');
+            } else {
+                batFlowLine.classList.remove('energy-flow-reverse');
+            }
+        }
+
+        function onSimulationChange() {
+            data.pvPower = parseFloat(document.getElementById('slider-pv').value);
+            data.loadPower = parseFloat(document.getElementById('slider-load').value);
+
+            document.getElementById('slider-pv-lbl').innerText = `${data.pvPower.toFixed(1)} кВт`;
+            document.getElementById('slider-load-lbl').innerText = `${data.loadPower.toFixed(1)} кВт`;
+
+            recalculateEnergyBalance();
+            renderDashboard();
+        }
+
+        function triggerRefresh() {
+            const icon = document.getElementById('refresh-icon');
+            icon.classList.add('fa-spin');
+            setTimeout(() => {
+                icon.classList.remove('fa-spin');
+                renderDashboard();
+            }, 600);
+        }
+
+        function shareStatusToTelegram() {
+            const summary = `⚡️ Growatt Status: АКБ ${Math.round(data.soc)}% | Сонце: ${data.pvPower.toFixed(2)}кВт | Дім: ${data.loadPower.toFixed(2)}кВт`;
+            if (tg && tg.sendData) {
+                tg.sendData(summary);
+            } else {
+                // Clipboard fallback inside standard iframe
+                const tempInput = document.createElement('textarea');
+                tempInput.value = summary;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+                alert('Статус скопійовано в буфер обміну:\n' + summary);
+            }
+        }
+    </script>
+</body>
+</html>
