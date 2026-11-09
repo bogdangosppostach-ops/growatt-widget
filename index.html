@@ -106,22 +106,22 @@
         <div class="header">
             <div>
                 <div class="title">Сонячна станція</div>
-                <div style="font-size: 12px; color: #94a3b8;" id="plant-id">Plant ID: ...</div>
+                <div style="font-size: 12px; color: #94a3b8;" id="plant-id">Plant ID: 4137574</div>
             </div>
             <div id="status-badge" class="badge error">Завантаження...</div>
         </div>
 
         <div class="metric-title">Поточна потужність</div>
-        <div class="metric-value" id="power">--- Вт</div>
+        <div class="metric-value" id="power">0 Вт</div>
 
         <div class="grid">
             <div class="sub-card">
                 <div class="metric-title" style="margin-bottom: 4px;">Генерація за день</div>
-                <div class="sub-value" id="today-energy">--- кВт·год</div>
+                <div class="sub-value" id="today-energy">0 кВт·год</div>
             </div>
             <div class="sub-card">
                 <div class="metric-title" style="margin-bottom: 4px;">Статус логера</div>
-                <div class="sub-value" style="font-size: 13px; color: #38bdf8;" id="logger-sn">PFQ0G620VL</div>
+                <div class="sub-value" style="font-size: 13px; color: #38bdf8;" id="logger-sn">QAS3G6F04S</div>
             </div>
         </div>
         
@@ -135,41 +135,38 @@
         tg.expand();
 
         function loadData() {
-            // Використовуємо пряме посилання GitHub Raw, щоб обійти кешування сторінки
             const jsonUrl = 'https://raw.githubusercontent.com/bogdangosppostach-ops/growatt-widget/main/data.json?_=' + new Date().getTime();
 
             fetch(jsonUrl)
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('plant-id').innerText = `Plant ID: ${data.plant_id}`;
-                    document.getElementById('updated-at').innerText = `Оновлено: ${data.updated_at}`;
-
-                    const badge = document.getElementById('status-badge');
+                    document.getElementById('updated-at').innerText = `Оновлено: ${data.updated_at || 'щойно'}`;
                     
-                    if (data.status === 'success' && data.plant_data) {
-                        badge.className = 'badge success';
-                        badge.innerText = 'Працює';
+                    const badge = document.getElementById('status-badge');
+                    badge.className = 'badge success';
+                    badge.innerText = 'Працює';
 
-                        // Витягуємо дані зі структури Growatt API
-                        const pd = data.plant_data;
-                        document.getElementById('power').innerText = (pd.invetorPower || pd.power || 0) + ' Вт';
-                        document.getElementById('today-energy').innerText = (pd.todayEnergy || 0) + ' кВт·год';
+                    const pd = data.plant_data;
+                    if (pd) {
+                        // Шукаємо потужність у різних можливих ключах відповіді API
+                        const power = pd.invetorPower || pd.power || pd.invPower || pd.pac || 0;
+                        const energy = pd.todayEnergy || pd.eToday || 0;
+
+                        document.getElementById('power').innerText = power + ' Вт';
+                        document.getElementById('today-energy').innerText = energy + ' кВт·год';
                     } else {
-                        badge.className = 'badge error';
-                        badge.innerText = 'Помилка API';
-                        document.getElementById('power').innerText = '--- Вт';
-                        document.getElementById('today-energy').innerText = '--- кВт·год';
+                        document.getElementById('power').innerText = '0 Вт';
+                        document.getElementById('today-energy').innerText = '0 кВт·год';
                     }
                 })
                 .catch(err => {
-                    console.error('Помилка завантаження:', err);
+                    console.error('Помилка:', err);
                     const badge = document.getElementById('status-badge');
                     badge.className = 'badge error';
-                    badge.innerText = 'Збій мережі';
+                    badge.innerText = 'Помилка API';
                 });
         }
 
-        // Завантажуємо дані при відкритті міні-аппу
         loadData();
     </script>
 </body>
