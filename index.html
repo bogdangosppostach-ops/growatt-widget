@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Growatt Inverter Monitor</title>
+    <title>Growatt Monitor</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: #0f172a;
             color: #f8fafc;
             margin: 0;
@@ -22,9 +22,8 @@
             padding: 20px;
             width: 100%;
             max-width: 400px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            margin-bottom: 16px;
             box-sizing: border-box;
+            margin-bottom: 16px;
         }
         .header {
             display: flex;
@@ -34,11 +33,6 @@
             padding-bottom: 12px;
             margin-bottom: 16px;
         }
-        .title {
-            font-size: 18px;
-            font-weight: bold;
-            color: #38bdf8;
-        }
         .badge {
             padding: 4px 10px;
             border-radius: 8px;
@@ -47,42 +41,21 @@
         }
         .badge.success { background-color: #065f46; color: #34d399; }
         .badge.error { background-color: #7f1d1d; color: #fca5a5; }
-        .metric-title {
-            font-size: 13px;
-            color: #94a3b8;
-            text-transform: uppercase;
-            text-align: center;
-            margin-bottom: 8px;
-        }
         .metric-value {
             font-size: 32px;
             font-weight: bold;
             text-align: center;
             color: #34d399;
-            margin-bottom: 20px;
+            margin: 20px 0;
         }
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-        .sub-card {
-            background-color: #0f172a;
-            padding: 12px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        .sub-value {
-            font-size: 16px;
-            font-weight: bold;
-            color: #f8fafc;
-            margin-top: 4px;
-        }
-        .footer {
-            font-size: 11px;
-            color: #64748b;
-            text-align: center;
+        .error-box {
+            background-color: #7f1d1d;
+            color: #fca5a5;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
             margin-top: 10px;
+            word-break: break-all;
         }
         .btn {
             background-color: #059669;
@@ -95,37 +68,24 @@
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 10px;
         }
-        .btn:active { background-color: #047857; }
     </style>
 </head>
 <body>
-
     <div class="card">
         <div class="header">
             <div>
-                <div class="title">Інвертор та Генератор</div>
+                <h3>Інвертор</h3>
                 <div style="font-size: 12px; color: #94a3b8;" id="plant-id">Plant ID: 4137574</div>
             </div>
-            <div id="status-badge" class="badge error">Завантаження...</div>
+            <div id="status-badge" class="badge error">Очікування</div>
         </div>
 
-        <div class="metric-title">Потужність інвертора</div>
-        <div class="metric-value" id="power">0 Вт</div>
-
-        <div class="grid">
-            <div class="sub-card">
-                <div class="metric-title" style="margin-bottom: 4px;">Енергія за день</div>
-                <div class="sub-value" id="today-energy">0 кВт·год</div>
-            </div>
-            <div class="sub-card">
-                <div class="metric-title" style="margin-bottom: 4px;">Логер SN</div>
-                <div class="sub-value" style="font-size: 13px; color: #38bdf8;" id="logger-sn">QAS3G6F04S</div>
-            </div>
-        </div>
+        <div style="font-size: 13px; color: #94a3b8; text-align: center;">ПОТУЖНІСТЬ</div>
+        <div class="metric-value" id="power">--- Вт</div>
         
-        <div class="footer" id="updated-at">Оновлено: ніколи</div>
+        <div id="error-container"></div>
+        <div style="font-size: 11px; color: #64748b; text-align: center; margin-top: 15px;" id="updated-at">Оновлено: ніколи</div>
     </div>
 
     <button class="btn" onclick="loadData()">Оновити дані</button>
@@ -135,31 +95,37 @@
         tg.expand();
 
         function loadData() {
+            const badge = document.getElementById('status-badge');
+            badge.className = 'badge error';
+            badge.innerText = 'Завантаження...';
+            
             const jsonUrl = 'https://raw.githubusercontent.com/bogdangosppostach-ops/growatt-widget/main/data.json?t=' + new Date().getTime();
 
             fetch(jsonUrl)
-                .then(response => response.json())
+                .then(res => res.json())
                 .then(data => {
                     document.getElementById('updated-at').innerText = `Оновлено: ${data.updated_at || 'щойно'}`;
-                    
-                    const badge = document.getElementById('status-badge');
                     
                     if (data.status === 'success') {
                         badge.className = 'badge success';
                         badge.innerText = 'Працює';
-
                         const pd = data.plant_data;
-                        if (pd && typeof pd === 'object') {
-                            document.getElementById('power').innerText = (pd.invetorPower || 0) + ' Вт';
-                            document.getElementById('today-energy').innerText = (pd.todayEnergy || 0) + ' кВт·год';
-                        } else {
-                            document.getElementById('power').innerText = '0 Вт';
-                            document.getElementById('today-energy').innerText = '0 кВт·год';
-                        }
+                        document.getElementById('power').innerText = (pd.invetorPower || 0) + ' Вт';
+                        document.getElementById('error-container').innerHTML = '';
                     } else {
                         badge.className = 'badge error';
                         badge.innerText = 'Помилка API';
+                        document.getElementById('error-container').innerHTML = `<div class="error-box">Помилка скрипта: ${data.error || 'Невідомо'}</div>`;
                     }
                 })
                 .catch(err => {
-                    console.error('Помилка завантаження:',
+                    badge.className = 'badge error';
+                    badge.innerText = 'Збій мережі';
+                    document.getElementById('error-container').innerHTML = `<div class="error-box">${err.message}</div>`;
+                });
+        }
+
+        loadData();
+    </script>
+</body>
+</html>
