@@ -2,7 +2,7 @@ name: Run Growatt Script
 
 on:
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '0 * * * *'  # Запуск щогодини (або '*/30 * * * *' кожні пів години)
   workflow_dispatch:
 
 permissions:
