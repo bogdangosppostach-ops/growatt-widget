@@ -5,6 +5,9 @@ on:
     - cron: '*/5 * * * *'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   run-script:
     runs-on: ubuntu-latest
@@ -22,5 +25,15 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run script
+        env:
+          GROWATT_USER: ${{ secrets.GROWATT_USER }}
+          GROWATT_PASSWORD: ${{ secrets.GROWATT_PASSWORD }}
         run: |
           python main.py
+
+      - name: Commit and push if data changed
+        run: |
+          git config --global user.name 'GitHub Actions Bot'
+          git config --global user.email 'actions@github.com'
+          git add data.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-update inverter data [skip ci]" && git push)
