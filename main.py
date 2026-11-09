@@ -10,41 +10,46 @@ PLANT_ID = 4137574
 
 def main():
   print("Спроба підключення до сервера Growatt...")
+  plant_data = None
+  status = "error"
+
   if not USERNAME or not PASSWORD:
     print("Помилка: Не знайдено змінні середовища.")
-    return
+    error_message = "Missing environment variables"
+  else:
+    try:
+      api = GrowattApi()
+      login_response = api.login(USERNAME, PASSWORD)
 
-  api = GrowattApi()
-  try:
-    login_response = api.login(USERNAME, PASSWORD)
-  except Exception as e:
-    print(f"Помилка логіну: {e}")
-    return
+      if login_response and "userId" in login_response:
+        print("Успішний вхід в акаунт Growatt!")
+        try:
+          plant_data = api.plant_detail(PLANT_ID)
+          status = "success"
+          error_message = None
+        except Exception as e:
+          print(f"Помилка отримання даних станції: {e}")
+          error_message = str(e)
+      else:
+        print("Помилка: Не вдалося увійти в акаунт Growatt.")
+        error_message = "Login failed - invalid credentials or blocked"
+    except Exception as e:
+      print(f"Загальна помилка підключення: {e}")
+      error_message = str(e)
 
-  if not login_response or "userId" not in login_response:
-    print("Помилка: Не вдалося увійти в акаунт Growatt.")
-    return
-
-  print("Успішний вхід в акаунт Growatt!")
-
-  # Безпечне отримання даних станції
-  try:
-    plant_data = api.plant_detail(PLANT_ID)
-  except Exception as e:
-    print(f"Помилка отримання даних станції: {e}")
-    plant_data = {"status": "error", "message": str(e)}
-
+  # Гарантовано формуємо та записуємо data.json за будь-якого результату
   data_to_save = {
       "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
       "plant_id": PLANT_ID,
+      "status": status,
+      "error": error_message,
       "plant_data": plant_data,
   }
 
-  # Гарантований запис файлу data.json у корінь репозиторію
   with open("data.json", "w", encoding="utf-8") as f:
     json.dump(data_to_save, f, ensure_ascii=False, indent=4)
 
-  print("Файл data.json успішно створено та записано.")
+  print("Файл data.json успішно записано.")
 
 
 if __name__ == "__main__":
