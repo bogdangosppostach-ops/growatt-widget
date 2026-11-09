@@ -1,8 +1,10 @@
 import json
 import os
 from datetime import datetime
-import urllib.request
+from growattServer import GrowattApi
 
+USERNAME = os.getenv("GROWATT_USER")
+PASSWORD = os.getenv("GROWATT_PASSWORD")
 PLANT_ID = 4137574
 
 def main():
@@ -10,23 +12,23 @@ def main():
     status = "error"
     error_message = None
 
-    try:
-        # Використовуємо публічний API-ендпоинт Growatt без логіна та пароля, які блокує 403
-        url = f"https://server.growatt.com/panel/app/getPlantData?plantId={PLANT_ID}"
-        req = urllib.request.Request(
-            url, 
-            headers={'User-Agent': 'Mozilla/5.0'}
-        )
-        
-        with urllib.request.urlopen(req, timeout=10) as response:
-            res_data = json.loads(response.read().decode())
-            if res_data:
-                plant_data = res_data
-                status = "success"
+    if not USERNAME or not PASSWORD:
+        error_message = "Missing environment variables"
+    else:
+        try:
+            api = GrowattApi()
+            login_response = api.login(USERNAME, PASSWORD)
+            
+            if login_response and ("userId" in login_response or login_response.get("success") == True):
+                try:
+                    plant_data = api.plant_detail(PLANT_ID)
+                    status = "success"
+                except Exception as e:
+                    error_message = f"Plant detail error: {str(e)}"
             else:
-                error_message = "Empty response from server"
-    except Exception as e:
-        error_message = str(e)
+                error_message = f"Login failed: {login_response}"
+        except Exception as e:
+            error_message = str(e)
 
     data_to_save = {
         "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
