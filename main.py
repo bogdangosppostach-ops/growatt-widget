@@ -19,16 +19,20 @@ def main():
     error_message = "Missing environment variables"
   else:
     try:
-      # Ініціалізуємо API та вмикаємо збереження сесії
       api = GrowattApi()
       
-      # Пробуємо авторизуватися
+      # Додаємо заголовки справжнього браузера, щоб обійти блокування Cloudflare (403)
+      api.session.headers.update({
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+          'Accept': 'application/json, text/javascript, */*; q=0.01',
+          'Accept-Language': 'uk-UA,uk;q=0.9,en-US;q=0.8,en;q=0.7',
+      })
+
       login_response = api.login(USERNAME, PASSWORD)
 
       if login_response and "userId" in login_response:
         print("Успішний вхід в акаунт Growatt!")
         try:
-          # Отримуємо деталі станції
           plant_data = api.plant_detail(PLANT_ID)
           status = "success"
         except Exception as e:
@@ -42,7 +46,6 @@ def main():
       print(f"Загальна помилка підключення: {e}")
       error_message = str(e)
 
-  # Записуємо результат у data.json у будь-якому випадку, щоб міні-апп не падав
   data_to_save = {
       "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
       "plant_id": PLANT_ID,
