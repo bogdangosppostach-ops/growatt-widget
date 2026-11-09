@@ -1,5 +1,5 @@
 {
-    "updated_at": "2026-11-09 18:07:35",
+    "updated_at": "2026-11-09 18:18:19",
     "plant_id": 4137574,
     "status": "error",
     "error": "403 Client Error: Forbidden for url: https://openapi.growatt.com/newTwoLoginAPI.do",
