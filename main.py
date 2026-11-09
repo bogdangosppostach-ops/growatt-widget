@@ -18,18 +18,21 @@ def main():
   try:
     login_response = api.login(USERNAME, PASSWORD)
   except Exception as e:
-    print(f"Помилка підключення до API: {e}")
+    print(f"Помилка логіну: {e}")
     return
 
   if not login_response or "userId" not in login_response:
-    print(
-        "Помилка: Не вдалося увійти. Перевірте логін та пароль у GitHub"
-        " Secrets."
-    )
+    print("Помилка: Не вдалося увійти в акаунт Growatt.")
     return
 
   print("Успішний вхід в акаунт Growatt!")
-  plant_data = api.plant_detail(PLANT_ID)
+
+  # Безпечне отримання даних станції
+  try:
+    plant_data = api.plant_detail(PLANT_ID)
+  except Exception as e:
+    print(f"Помилка отримання даних станції: {e}")
+    plant_data = {"status": "error", "message": str(e)}
 
   data_to_save = {
       "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -37,10 +40,11 @@ def main():
       "plant_data": plant_data,
   }
 
+  # Гарантований запис файлу data.json у корінь репозиторію
   with open("data.json", "w", encoding="utf-8") as f:
     json.dump(data_to_save, f, ensure_ascii=False, indent=4)
 
-  print("Дані успішно збережено у файл data.json")
+  print("Файл data.json успішно створено та записано.")
 
 
 if __name__ == "__main__":
